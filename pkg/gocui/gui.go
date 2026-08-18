@@ -1472,7 +1472,9 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 	return nil
 }
 
-// drawSubtitle draws the subtitle of the view.
+// drawSubtitle draws the subtitle of the view, parsing ANSI escape
+// codes so that colour sequences in the subtitle are rendered with
+// the appropriate foreground/background colours.
 func (g *Gui) drawSubtitle(v *View, fgColor, bgColor Attribute) error {
 	if v.y0 < 0 || v.y0 >= g.maxY {
 		return nil
@@ -1483,14 +1485,36 @@ func (g *Gui) drawSubtitle(v *View, fgColor, bgColor Attribute) error {
 		return nil
 	}
 	x := start
-	for _, ch := range v.Subtitle {
+
+	ei := newEscapeInterpreter(v.outMode)
+	for _, r := range v.Subtitle {
 		if x >= v.x1 {
 			break
 		}
-		if err := g.SetRune(x, v.y0, ch, fgColor, bgColor); err != nil {
+		ch := []byte(string(r))
+		isEscape, err := ei.parseOne(ch)
+		if err != nil {
+			if err := g.SetRune(x, v.y0, r, fgColor, bgColor); err != nil {
+				return err
+			}
+			x += uniseg.StringWidth(string(r))
+			continue
+		}
+		if isEscape {
+			continue
+		}
+		curFg := ei.curFgColor
+		curBg := ei.curBgColor
+		if curFg&AttrColorBits == ColorDefault {
+			curFg = fgColor | (curFg & AttrStyleBits)
+		}
+		if curBg&AttrColorBits == ColorDefault {
+			curBg = bgColor | (curBg & AttrStyleBits)
+		}
+		if err := g.SetRune(x, v.y0, r, curFg, curBg); err != nil {
 			return err
 		}
-		x += uniseg.StringWidth(string(ch))
+		x += uniseg.StringWidth(string(r))
 	}
 	return nil
 }
