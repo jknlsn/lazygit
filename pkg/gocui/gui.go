@@ -1534,7 +1534,9 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) {
 	}
 }
 
-// drawSubtitle draws the subtitle of the view.
+// drawSubtitle draws the subtitle of the view, parsing ANSI escape
+// codes so that colour sequences in the subtitle are rendered with
+// the appropriate foreground/background colours.
 func (g *Gui) drawSubtitle(v *View, fgColor, bgColor Attribute) {
 	if v.y0 < 0 || v.y0 >= g.maxY {
 		return
@@ -1545,12 +1547,32 @@ func (g *Gui) drawSubtitle(v *View, fgColor, bgColor Attribute) {
 		return
 	}
 	x := start
-	for _, ch := range v.Subtitle {
+
+	ei := newEscapeInterpreter(v.outMode)
+	for _, r := range v.Subtitle {
 		if x >= v.x1 {
 			break
 		}
-		g.SetRune(x, v.y0, ch, fgColor, bgColor)
-		x += uniseg.StringWidth(string(ch))
+		ch := []byte(string(r))
+		isEscape, err := ei.parseOne(ch)
+		if err != nil {
+			g.SetRune(x, v.y0, r, fgColor, bgColor)
+			x += uniseg.StringWidth(string(r))
+			continue
+		}
+		if isEscape {
+			continue
+		}
+		curFg := ei.curFgColor
+		curBg := ei.curBgColor
+		if curFg&AttrColorBits == ColorDefault {
+			curFg = fgColor | (curFg & AttrStyleBits)
+		}
+		if curBg&AttrColorBits == ColorDefault {
+			curBg = bgColor | (curBg & AttrStyleBits)
+		}
+		g.SetRune(x, v.y0, r, curFg, curBg)
+		x += uniseg.StringWidth(string(r))
 	}
 }
 
