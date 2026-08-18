@@ -402,7 +402,8 @@ git:
     # Automatic WYSIWYG wrapping of the commit message as you type
     autoWrapCommitMessage: true
 
-    # If autoWrapCommitMessage is true, the width to wrap to
+    # If autoWrapCommitMessage is true, the width to wrap to. Also the width past
+    # which the commit length indicator turns red (yellow at 70%).
     autoWrapWidth: 72
 
   # Config relating to merging

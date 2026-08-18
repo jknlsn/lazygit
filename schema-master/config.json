@@ -17,7 +17,7 @@
         },
         "autoWrapWidth": {
           "type": "integer",
-          "description": "If autoWrapCommitMessage is true, the width to wrap to",
+          "description": "If autoWrapCommitMessage is true, the width to wrap to. Also the width past which the commit length indicator turns red (yellow at 70%).",
           "default": 72
         }
       },

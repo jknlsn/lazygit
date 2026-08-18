@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jesseduffield/lazygit/pkg/gui/style"
 	"github.com/jesseduffield/lazygit/pkg/gui/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
 	"github.com/spf13/afero"
@@ -184,13 +185,26 @@ func (self *CommitMessageContext) RenderSubtitle() {
 		if subtitle != "" {
 			subtitle += "─"
 		}
-		subtitle += getBufferLength(subject)
+		subtitle += getBufferLength(subject, self.c.UserConfig().Git.Commit.AutoWrapWidth)
 	}
 	self.c.Views().CommitMessage.Subtitle = subtitle
 }
 
-func getBufferLength(subject string) string {
-	return " " + strconv.Itoa(strings.Count(subject, "")-1) + " "
+func getBufferLength(subject string, autoWrapWidth int) string {
+	length := strings.Count(subject, "") - 1
+	indicator := " " + strconv.Itoa(length) + " "
+
+	// 50/72 is the conventional commit subject guidance: warn at 70% of the
+	// wrap width (50 at the default 72), go red past the wrap width itself.
+	warningWidth := autoWrapWidth * 7 / 10
+	switch {
+	case autoWrapWidth > 0 && length > autoWrapWidth:
+		return style.FgRed.SetBold().Sprint(indicator)
+	case autoWrapWidth > 0 && length > warningWidth:
+		return style.FgYellow.SetBold().Sprint(indicator)
+	default:
+		return indicator
+	}
 }
 
 func (self *CommitMessageContext) SwitchToEditor(message string) error {

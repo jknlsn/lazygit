@@ -395,7 +395,7 @@ type CommitConfig struct {
 	SignOff bool `yaml:"signOff"`
 	// Automatic WYSIWYG wrapping of the commit message as you type
 	AutoWrapCommitMessage bool `yaml:"autoWrapCommitMessage"`
-	// If autoWrapCommitMessage is true, the width to wrap to
+	// If autoWrapCommitMessage is true, the width to wrap to. Also the width past which the commit length indicator turns red (yellow at 70%).
 	AutoWrapWidth int `yaml:"autoWrapWidth"`
 }
 
