@@ -16,7 +16,7 @@ import (
 // │a35c687d CI commit-10           ▼┌─Command log────────────────────────────────────────────────────┐
 // └───────────────────────10 of 20─┘│Random tip: To filter commits by path, press '<ctrl+s>'         │
 // ╶─Stash───────────────────0 of 0─╴└────────────────────────────────────────────────────────────────┘
-//  <pgup>/<pgdown>: Scroll, <esc>: Cancel, q: Quit, ?: Keybindings, 1-Donate Ask Question unversioned
+//  <pgup>/<pgdown>: Scroll, <esc>: Cancel, q: Quit, ?: Keybindings, 1-                   unversioned
 
 var Accordion = NewIntegrationTest(NewIntegrationTestArgs{
 	Description:  "Verify accordion mode kicks in when the screen height is too small",
